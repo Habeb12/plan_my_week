@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
+import 'package:positioned_tap_detector_2/positioned_tap_detector_2.dart'; // Ensure this package is included
 
 class MapView extends StatefulWidget {
   @override
@@ -30,15 +31,12 @@ class _MapViewState extends State<MapView> {
     }
   }
 
-  void _onTap(LatLng position) {
+  void _onTap(TapPosition tapPosition, LatLng position) {
     // Set the selected position when tapped
-    print('Tapped position: $position'); // Add this line to check if onTap is called
     setState(() {
       _selectedPosition = position;
     });
-    print('Selected position: $_selectedPosition'); // Add this line to check the selected position
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -54,13 +52,13 @@ class _MapViewState extends State<MapView> {
           zoom: 10, // Default zoom level
           onTap: _onTap, // Call _onTap when the map is tapped
         ),
-        layers: [
-          TileLayerOptions(
+        children: [
+          TileLayer(
             urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
             subdomains: ['a', 'b', 'c'],
           ),
           if (_currentLocation != null)
-            MarkerLayerOptions(
+            MarkerLayer(
               markers: [
                 if (_selectedPosition != null)
                   Marker(
@@ -79,7 +77,7 @@ class _MapViewState extends State<MapView> {
         onPressed: () {
           // Return the selected position to the previous screen
           if (_selectedPosition != null) {
-            Navigator.pop(context, _selectedPosition); // Corrected line
+            Navigator.pop(context, _selectedPosition);
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Please select a location')),

@@ -31,8 +31,6 @@ class _DateViewState extends State<DateView> {
     });
   }
 
-
-
   Future<void> _refreshActivities() async {
     await _fetchActivities();
   }
@@ -88,12 +86,12 @@ class _DateViewState extends State<DateView> {
                           center: _parseLocation(activity['location']),
                           zoom: 10,
                         ),
-                        layers: [
-                          TileLayerOptions(
+                        children: [
+                          TileLayer(
                             urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                             subdomains: ['a', 'b', 'c'],
                           ),
-                          MarkerLayerOptions(
+                          MarkerLayer(
                             markers: [
                               Marker(
                                 width: 30.0,

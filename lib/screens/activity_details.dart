@@ -30,8 +30,14 @@ class _ActivityDetailsViewState extends State<ActivityDetailsView> {
       return LatLng(latitude, longitude);
     } catch (e) {
       print('Failed to parse location: $e');
-      return LatLng(0, 0);
+      return LatLng(0, 0); // Default location in case of an error
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _isDone = widget.activity['done'] == 1;
   }
 
   @override
@@ -39,158 +45,145 @@ class _ActivityDetailsViewState extends State<ActivityDetailsView> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Activity Details'),
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(10.0),
-        child: SingleChildScrollView(
-          child: Container(
-            margin: EdgeInsets.all(5),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.5),
-                  spreadRadius: 3,
-                  blurRadius: 5,
-                  offset: Offset(0, 3),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.edit),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddEditActivityView(activity: widget.activity),
                 ),
-              ],
-            ),
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Title: ${widget.activity['title']}',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ).then((value) {
+                setState(() {});
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Activity edited')),
+                );
+              });
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: () async {
+              bool confirmed = await _showDeleteConfirmationDialog(context);
+              if (confirmed) {
+                await _controller.handleDeleteButtonClick(widget.activity['id']);
+                Navigator.pop(context);
+              }
+            },
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Title: ${widget.activity['title']}',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 16),
+              Text(
+                'Description: ${widget.activity['description']}',
+                style: TextStyle(fontSize: 18),
+              ),
+              SizedBox(height: 16),
+              Text(
+                'Category: ${widget.activity['category']}',
+                style: TextStyle(fontSize: 18),
+              ),
+              SizedBox(height: 16),
+              SizedBox(
+                height: 200,
+                child: widget.activity['location'] != null && widget.activity['location'].isNotEmpty
+                    ? FlutterMap(
+                  options: MapOptions(
+                    center: _parseLocation(widget.activity['location']),
+                    zoom: 13,
                   ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Description: ${widget.activity['description']}',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Date: ${widget.activity['date']}',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  SizedBox(height: 8),
-                  if (widget.activity['image'] != null)
-                    Container(
-                      height: 200,
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          image: FileImage(File(widget.activity['image'])),
-                          fit: BoxFit.cover,
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
+                  children: [
+                    TileLayer(
+                      urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      subdomains: ['a', 'b', 'c'],
                     ),
-                  SizedBox(height: 8),
-                  SizedBox(
-                    height: 200,
-                    child: Row(
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: widget.activity['location'] != null &&
-                              widget.activity['location'].isNotEmpty
-                              ? FlutterMap(
-                            options: MapOptions(
-                              center: _parseLocation(widget.activity['location']),
-                              zoom: 10,
-                            ),
-                            layers: [
-                              TileLayerOptions(
-                                urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                subdomains: ['a', 'b', 'c'],
-                              ),
-                              MarkerLayerOptions(
-                                markers: [
-                                  Marker(
-                                    width: 30.0,
-                                    height: 30.0,
-                                    point: _parseLocation(widget.activity['location']),
-                                    builder: (ctx) => Container(
-                                      child: Icon(Icons.location_on, color: Colors.red),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          )
-                              : Container(
-                            color: Colors.grey.withOpacity(0.5),
-                            child: Center(child: Text('No location data')),
+                    MarkerLayer(
+                      markers: [
+                        Marker(
+                          width: 30.0,
+                          height: 30.0,
+                          point: _parseLocation(widget.activity['location']),
+                          builder: (ctx) => Container(
+                            child: Icon(Icons.location_on, color: Colors.red),
                           ),
                         ),
                       ],
                     ),
-                  ),
-                  SizedBox(height: 8),
+                  ],
+                )
+                    : Container(
+                  color: Colors.grey.withOpacity(0.5),
+                  child: Center(child: Text('No location data')),
+                ),
+              ),
+              SizedBox(height: 16),
+              widget.activity['image'] != null && widget.activity['image'].isNotEmpty
+                  ? Image.file(File(widget.activity['image']))
+                  : Text('No image available'),
+              SizedBox(height: 16),
+              Row(
+                children: [
                   Text(
-                    'Category: ${widget.activity['category']}',
-                    style: TextStyle(fontSize: 16),
+                    'Done: ',
+                    style: TextStyle(fontSize: 18),
                   ),
-                  SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => AddEditActivityView(activity: widget.activity),
-                            ),
-                          ).then((value) {
-                            Get.snackbar('PlanMyWeek', 'Activity edited',
-                                margin: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-                                snackPosition: SnackPosition.BOTTOM,
-                                icon: Icon(Icons.info));
-                          });
-                        },
-                        child: Text('Edit'),
-                      ),
-                      InkWell(
-                        onTap: () async {
-                          bool value = !(_isDone);
-                          await _controller.handleMarkActivityAsDone(widget.activity['id'], value);
-                          setState(() {
-                            _isDone = value;
-                          });
-                          String message = value ? 'Activity marked as done' : 'Activity marked as not done';
-                          Get.snackbar('PlanMyWeek', message,
-                              margin: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-                              icon: Icon(Icons.info));
-                        },
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                                width: 2,
-                                color: _isDone ? Colors.green : Colors.blue),
-                          ),
-                          child: Icon(
-                            _isDone ? Icons.check : Icons.check_box_outline_blank,
-                            color: _isDone ? Colors.green : Colors.blue,
-                            size: 30,
-                          ),
-                        ),
-                      ),
-                    ],
+                  Checkbox(
+                    value: _isDone,
+                    onChanged: (bool? value) async {
+                      if (value != null) {
+                        await _controller.handleMarkActivityAsDone(widget.activity['id'], value);
+                        setState(() {
+                          _isDone = value;
+                          widget.activity['done'] = value ? 1 : 0;
+                        });
+                        String message = value ? 'Activity marked as done' : 'Activity marked as not done';
+                        Get.snackbar('PlanMyWeek', message, margin: EdgeInsets.symmetric(vertical: 20, horizontal: 10), icon: Icon(Icons.info));
+                      }
+                    },
                   ),
                 ],
               ),
-            ),
+            ],
           ),
         ),
       ),
+    );
+  }
+
+  Future<bool> _showDeleteConfirmationDialog(BuildContext context) async {
+    return await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Delete Activity'),
+          content: Text('Are you sure you want to delete this activity?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+              child: Text('Delete'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
