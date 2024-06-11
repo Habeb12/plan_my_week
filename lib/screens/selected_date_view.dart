@@ -83,8 +83,8 @@ class _DateViewState extends State<DateView> {
                       child: activity['location'] != null && activity['location'].isNotEmpty
                           ? FlutterMap(
                         options: MapOptions(
-                          center: _parseLocation(activity['location']),
-                          zoom: 10,
+                          initialCenter: _parseLocation(activity['location']),
+                          minZoom: 10,
                         ),
                         children: [
                           TileLayer(
@@ -97,9 +97,7 @@ class _DateViewState extends State<DateView> {
                                 width: 30.0,
                                 height: 30.0,
                                 point: _parseLocation(activity['location']),
-                                builder: (ctx) => Container(
-                                  child: Icon(Icons.location_on, color: Colors.red),
-                                ),
+                                child: Icon(Icons.location_on, color: Colors.red),
                               ),
                             ],
                           ),

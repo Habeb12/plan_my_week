@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
-import 'package:positioned_tap_detector_2/positioned_tap_detector_2.dart'; // Ensure this package is included
+// import 'package:positioned_tap_detector_2/positioned_tap_detector_2.dart'; // Ensure this package is included
 
 class MapView extends StatefulWidget {
   @override
@@ -44,12 +44,13 @@ class _MapViewState extends State<MapView> {
       appBar: AppBar(
         title: Text('Map View'),
       ),
-      body: FlutterMap(
+      body:
+      FlutterMap(
         options: MapOptions(
-          center: _currentLocation != null
+          initialCenter: _currentLocation != null
               ? LatLng(_currentLocation!.latitude!, _currentLocation!.longitude!)
               : LatLng(0, 0), // Default center
-          zoom: 10, // Default zoom level
+          minZoom: 10, // Default zoom level
           onTap: _onTap, // Call _onTap when the map is tapped
         ),
         children: [
@@ -65,9 +66,7 @@ class _MapViewState extends State<MapView> {
                     width: 30.0,
                     height: 30.0,
                     point: _selectedPosition!,
-                    builder: (ctx) => Container(
-                      child: Icon(Icons.location_on, color: Colors.blue),
-                    ),
+                    child: Icon(Icons.location_on, color: Colors.blue),
                   ),
               ],
             ),

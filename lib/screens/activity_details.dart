@@ -7,7 +7,7 @@ import 'package:get/get.dart';
 import 'dart:io';
 
 class ActivityDetailsView extends StatefulWidget {
-  final Map<String, dynamic> activity;
+   Map<String, dynamic> activity;
 
   ActivityDetailsView({required this.activity});
 
@@ -38,6 +38,7 @@ class _ActivityDetailsViewState extends State<ActivityDetailsView> {
   void initState() {
     super.initState();
     _isDone = widget.activity['done'] == 1;
+    print('Initial _isDone: $_isDone');
   }
 
   @override
@@ -100,8 +101,8 @@ class _ActivityDetailsViewState extends State<ActivityDetailsView> {
                 child: widget.activity['location'] != null && widget.activity['location'].isNotEmpty
                     ? FlutterMap(
                   options: MapOptions(
-                    center: _parseLocation(widget.activity['location']),
-                    zoom: 13,
+                    initialCenter: _parseLocation(widget.activity['location']),
+                    minZoom: 13,
                   ),
                   children: [
                     TileLayer(
@@ -114,9 +115,7 @@ class _ActivityDetailsViewState extends State<ActivityDetailsView> {
                           width: 30.0,
                           height: 30.0,
                           point: _parseLocation(widget.activity['location']),
-                          builder: (ctx) => Container(
-                            child: Icon(Icons.location_on, color: Colors.red),
-                          ),
+                          child: Icon(Icons.location_on, color: Colors.red),
                         ),
                       ],
                     ),
@@ -142,11 +141,17 @@ class _ActivityDetailsViewState extends State<ActivityDetailsView> {
                     value: _isDone,
                     onChanged: (bool? value) async {
                       if (value != null) {
+                        print('Checkbox changed: $value');
                         await _controller.handleMarkActivityAsDone(widget.activity['id'], value);
                         setState(() {
                           _isDone = value;
+                          // Create a new map with updated 'done' value
+                          widget.activity = Map<String, dynamic>.from(widget.activity);
                           widget.activity['done'] = value ? 1 : 0;
                         });
+
+
+                        print('Updated _isDone: $_isDone');
                         String message = value ? 'Activity marked as done' : 'Activity marked as not done';
                         Get.snackbar('PlanMyWeek', message, margin: EdgeInsets.symmetric(vertical: 20, horizontal: 10), icon: Icon(Icons.info));
                       }
