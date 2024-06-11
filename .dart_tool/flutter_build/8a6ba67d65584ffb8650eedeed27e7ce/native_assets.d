@@ -1,0 +1,1 @@
+ C:\\Users\\alaaa\\Desktop\\hamsu\\plan_my_week\\.dart_tool\\flutter_build\\8a6ba67d65584ffb8650eedeed27e7ce\\native_assets.yaml: 
