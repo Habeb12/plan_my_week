@@ -49,7 +49,7 @@ class _MapViewState extends State<MapView> {
         options: MapOptions(
           initialCenter: _currentLocation != null
               ? LatLng(_currentLocation!.latitude!, _currentLocation!.longitude!)
-              : LatLng(0, 0), // Default center
+              : LatLng(51, 10), // Default center
           minZoom: 10, // Default zoom level
           onTap: _onTap, // Call _onTap when the map is tapped
         ),

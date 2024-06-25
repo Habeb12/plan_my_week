@@ -19,7 +19,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.4.3 <4.0.0'
+  sdk: '>=3.4.1 <4.0.0'
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -58,6 +58,7 @@ dev_dependencies:
   image_picker: ^0.8.4+4
   path: ^1.8.3
   permission_handler: ^10.2.0
+  sqflite_common_ffi: ^2.0.0+4
   mockito: ^5.0.15
 
 
